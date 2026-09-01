@@ -52,6 +52,22 @@
   }
   function saveBackend() { try { localStorage.setItem(BK_KEY, JSON.stringify(BK)); } catch (e) {} }
 
+  /* ------------------------------------------------ agent / B2B store (separate store) */
+  var AG_KEY = 'mb.agent.v1';
+  var AG = loadAgent();
+  function loadAgent() {
+    try {
+      var raw = localStorage.getItem(AG_KEY);
+      if (raw) {
+        var o = JSON.parse(raw);
+        o.referrals = o.referrals || D.seedReferrals();
+        return o;
+      }
+    } catch (e) {}
+    return { referrals: D.seedReferrals() };
+  }
+  function saveAgent() { try { localStorage.setItem(AG_KEY, JSON.stringify(AG)); } catch (e) {} }
+
   /* ------------------------------------------------ helpers */
   function lang() { return I18N.getLang(); }
   /** bilingual (zh/en) picker — hospital & clinical content */
@@ -141,7 +157,11 @@
     backend: renderBackendHub,
     'ops-orders': renderOrders,
     'hospital-verify': renderVerify,
-    'ops-cases': renderCases
+    'ops-cases': renderCases,
+    'agent-dashboard': renderAgentDashboard,
+    'agent-referrals': renderAgentReferrals,
+    'agent-new': renderAgentNew,
+    'agent-commission': renderAgentCommission
   };
 
   function go(view, params) {
@@ -168,7 +188,7 @@
   function renderRoleSwitch() {
     var el = document.getElementById('roleSwitch');
     if (!el) return;
-    var roles = [['patient', '患者端'], ['hospital', '医院端'], ['ops', '运营后台']];
+    var roles = [['patient', '患者端'], ['agent', 'Agent 端'], ['hospital', '医院端'], ['ops', '运营后台']];
     el.innerHTML = roles.map(function (r) {
       return '<button class="rolepill' + (S.role === r[0] ? ' is-on' : '') + '" data-act="setRole" data-role="' + r[0] + '">' + r[1] + '</button>';
     }).join('');
@@ -176,9 +196,14 @@
   function renderNav() {
     var nav = document.getElementById('mainnav');
     if (!nav) return;
-    var items = (S.role === 'patient')
-      ? [['home', T('nav.home')], ['intake', T('nav.intake')], ['plans', T('nav.plans')], ['pricing', T('nav.pricing')], ['trips', T('nav.trips')]]
-      : [['backend', '工作台'], ['ops-orders', '订单'], ['hospital-verify', '核实工作台'], ['ops-cases', '案例库']];
+    var items;
+    if (S.role === 'patient') {
+      items = [['home', T('nav.home')], ['intake', T('nav.intake')], ['plans', T('nav.plans')], ['pricing', T('nav.pricing')], ['trips', T('nav.trips')]];
+    } else if (S.role === 'agent') {
+      items = [['agent-dashboard', '工作台'], ['agent-referrals', '我的转诊'], ['agent-new', '新建转诊'], ['agent-commission', '佣金分成']];
+    } else {
+      items = [['backend', '工作台'], ['ops-orders', '订单'], ['hospital-verify', '核实工作台'], ['ops-cases', '案例库']];
+    }
     nav.innerHTML = items.map(function (it) {
       var active = (S.view === it[0]) ||
         (S.role !== 'patient' && it[0] === 'backend' && (S.view === 'ops-orders' || S.view === 'hospital-verify' || S.view === 'ops-cases')) ||
@@ -1067,7 +1092,7 @@
 
   /* ---------- 工作台 hub ---------- */
   function renderBackendHub() {
-    var roleName = S.role === 'patient' ? '患者端' : S.role === 'hospital' ? '医院端' : '运营后台';
+    var roleName = S.role === 'patient' ? '患者端' : S.role === 'agent' ? 'Agent 端' : S.role === 'hospital' ? '医院端' : '运营后台';
     var cards = [
       ['ops-orders', '订单', '查看患者端生成的所有行程订单，跟踪核实与支付状态。', 'list'],
       ['hospital-verify', '医院核实工作台', '逐条核实 AI 生成的方案：医师档期、床位、准确报价与医师署名。', 'shield'],
@@ -1247,6 +1272,185 @@
   }
 
   /* ============================================================
+     AGENT / B2B — 合作机构端（中文界面）
+     ============================================================ */
+  function aHead(t, s, e) {
+    return '<div class="page-head"><div">' +
+      (e ? '<div class="eyebrow">' + e + '</div>' : '') +
+      '<h1>' + t + '</h1><p class="sub">' + s + '</p></div></div>';
+  }
+  function agentTierName(t) { return t === 'A' ? 'A 自理版' : t === 'B' ? 'B 全包版' : 'C 私人助理版'; }
+  function refStatusTag(s) {
+    var map = {
+      submitted:   ['tag--warn',    '已提交'],
+      consulting:  ['tag--primary', '沟通中'],
+      paid:        ['tag--violet',  '已付费·待结算'],
+      settled:     ['tag--success', '已结算'],
+      lost:        ['tag--danger',  '已流失']
+    };
+    var m = map[s] || map.submitted;
+    return '<span class="tag ' + m[0] + ' tag--dot">' + m[1] + '</span>';
+  }
+  function refRow(r) {
+    return '<div class="order-row">' +
+      '<div class="order-row__main">' +
+        '<div class="order-row__top"><strong>' + esc(r.refNo) + '</strong>' + refStatusTag(r.status) +
+          '<span class="tag">' + esc(deptName(r.dept)) + '</span>' +
+          '<span class="tag">' + esc(L(D.city(r.city).name)) + '</span>' +
+          '<span class="tag">' + esc(agentTierName(r.tier)) + '</span></div>' +
+        '<div class="order-row__meta">' + esc(r.patient) + ' · 来源 ' + esc(D.origin(r.origin).label || '') + ' · 创建于 ' + esc(r.createdAt) + '</div>' +
+      '</div>' +
+      '<div class="order-row__side"><strong class="order-row__amt">' + money(r.commission) + '</strong>' +
+        '<button class="btn btn--primary btn--sm" data-act="viewReferral" data-id="' + r.id + '">查看</button></div>' +
+    '</div>';
+  }
+
+  function renderAgentDashboard() {
+    var rs = AG.referrals;
+    var inProg = rs.filter(function (r) { return r.status === 'submitted' || r.status === 'consulting'; }).length;
+    var pending = rs.filter(function (r) { return r.status === 'paid'; }).reduce(function (a, r) { return a + r.commission; }, 0);
+    var settled = rs.filter(function (r) { return r.status === 'settled'; }).reduce(function (a, r) { return a + r.commission; }, 0);
+    var kpis = [
+      [rs.length, '总转诊数', ''],
+      [inProg, '进行中', '已提交 / 沟通中'],
+      [money(pending), '待结算佣金', '患者已付费 · 待平台结算'],
+      [money(settled), '已结算佣金', '已打入合作机构账户']
+    ].map(function (k) {
+      return '<div class="kpi"><div class="k">' + k[1] + '</div><div class="v">' + k[0] + '</div><div class="n">' + k[2] + '</div></div>';
+    }).join('');
+    var recent = rs.slice(0, 5).map(refRow).join('');
+    return aHead('合作机构工作台', '跨境医疗合作机构 / 转诊代理入口（演示）', 'Agent 端') +
+      '<div class="kpi-row">' + kpis + '</div>' +
+      '<div class="note note--info" style="margin-bottom:22px">' + icon('shield', 15) +
+        '<span>本入口面向东南亚等地区的医疗合作机构 / 转诊代理（Agent）。机构在此提交病人转诊、跟踪进度并查看佣金分成，是平台在该地区的低成本获客渠道。</span></div>' +
+      '<div class="block-title">最近转诊</div>' +
+      '<div class="order-list">' + recent + '</div>' +
+      '<div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">' +
+        '<button class="btn btn--primary" data-act="go" data-view="agent-new">' + icon('plus', 14) + ' 新建转诊</button>' +
+        '<button class="btn btn--ghost" data-act="go" data-view="agent-commission">查看佣金分成</button>' +
+      '</div>';
+  }
+
+  function renderAgentReferrals() {
+    var rs = AG.referrals;
+    var body = rs.length ? rs.map(refRow).join('') :
+      '<div class="empty"><div class="empty__ico">' + icon('list', 40) + '</div><h3>暂无转诊</h3></div>';
+    return aHead('我的转诊', '合作机构提交的全部病人转诊与佣金状态。', 'Agent 端 · 我的转诊') +
+      '<div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap">' +
+        '<button class="btn btn--primary" data-act="go" data-view="agent-new">' + icon('plus', 14) + ' 新建转诊</button>' +
+        '<button class="btn btn--ghost btn--sm" data-act="resetReferrals">重置示例数据</button>' +
+      '</div>' +
+      '<div class="order-list">' + body + '</div>';
+  }
+
+  function renderAgentNew() {
+    var deptOpts = D.DEPT_IDS.map(function (d) { return '<option value="' + d + '">' + esc(T('dept.' + d + '.name')) + '</option>'; }).join('');
+    var cityOpts = D.CITIES.map(function (c) { return '<option value="' + c.id + '">' + esc(L(c.name)) + '</option>'; }).join('');
+    var originOpts = D.ORIGINS.map(function (o) { return '<option value="' + o.id + '">' + esc(o.label) + '</option>'; }).join('');
+    var tierOpts = ['A', 'B', 'C'].map(function (t) {
+      var c = D.commissionFor(t);
+      return '<option value="' + t + '">' + esc(agentTierName(t)) + ' · 佣金约 ' + money(c.amount) + '</option>';
+    }).join('');
+    return aHead('新建转诊', '提交一例病人转诊，平台将进入需求评估与方案生成流程。', 'Agent 端 · 新建转诊') +
+      '<div class="intake-wrap"><div class="form-card"><div class="form-card__body">' +
+        '<div class="field"><label class="field__label">病人称呼<span class="req">*</span></label><input class="input" id="fPatient" placeholder="如 Nguyen Thi H."></div>' +
+        '<div class="field__row">' +
+          '<div class="field"><label class="field__label">科室<span class="req">*</span></label><select class="select" id="fDept">' + deptOpts + '</select></div>' +
+          '<div class="field"><label class="field__label">目标城市</label><select class="select" id="fCity">' + cityOpts + '</select></div>' +
+        '</div>' +
+        '<div class="field__row">' +
+          '<div class="field"><label class="field__label">来源国家 / 地区</label><select class="select" id="fOrigin">' + originOpts + '</select></div>' +
+          '<div class="field"><label class="field__label">预期服务包</label><select class="select" id="fTier">' + tierOpts + '</select></div>' +
+        '</div>' +
+        '<div class="field"><label class="field__label">转诊备注</label><textarea class="textarea" id="fNote" placeholder="简要病情、期望时间、特殊需求等"></textarea></div>' +
+        '<div class="field__hint">提交后转诊进入「已提交」状态，病人付费后佣金计入待结算。</div>' +
+      '</div>' +
+      '<div class="form-card__foot"><span class="tiny muted">演示数据，不接入真实 HIS</span>' +
+        '<button class="btn btn--primary" data-act="saveReferral">提交转诊 ' + icon('arrow', 16) + '</button></div>' +
+      '</div>' +
+      '<div><div class="side-card"><h3>' + icon('spark', 16) + ' 转诊即获客</h3><div class="proc">' +
+        [1, 2, 3, 4].map(function (n) {
+          var t = ['提交转诊', '平台生成方案', '病人付费', '佣金结算'];
+          var d = ['填写病人与科室信息', 'AI 生成 3 套跨境行程方案', '按所购服务包档位计佣', '行程结束无争议后打款至机构账户'];
+          return '<div class="proc__item"><span class="proc__dot">' + n + '</span><span class="proc__body"><strong>' + t[n - 1] + '</strong><span>' + d[n - 1] + '</span></span></div>';
+        }).join('') +
+      '</div></div>' +
+      '<div class="note note--info">' + icon('shield', 15) + '<span>合作机构通过本入口提交转诊，是平台在东南亚等地区的低成本获客渠道。</span></div>' +
+      '</div></div>';
+  }
+
+  function renderAgentCommission() {
+    var rs = AG.referrals;
+    var earned = rs.reduce(function (a, r) { return a + (r.status === 'paid' || r.status === 'settled' ? r.commission : 0); }, 0);
+    var settled = rs.reduce(function (a, r) { return a + (r.status === 'settled' ? r.commission : 0); }, 0);
+    var pending = earned - settled;
+    var ledger = rs.map(function (r) {
+      var c = D.commissionFor(r.tier);
+      return '<tr>' +
+        '<td><strong>' + esc(r.refNo) + '</strong></td>' +
+        '<td>' + esc(r.patient) + '</td>' +
+        '<td>' + esc(agentTierName(r.tier)) + '</td>' +
+        '<td class="mono-num">' + Math.round(c.rate * 100) + '%</td>' +
+        '<td class="mono-num">' + money(c.price) + '</td>' +
+        '<td class="mono-num"><b>' + money(r.commission) + '</b></td>' +
+        '<td>' + refStatusTag(r.status) + '</td>' +
+        '<td class="mono-num tiny muted">' + esc(r.settledAt || '—') + '</td>' +
+      '</tr>';
+    }).join('');
+    var ruleRows = ['A', 'B', 'C'].map(function (t) {
+      var c = D.commissionFor(t);
+      return '<tr><td><b>' + esc(agentTierName(t)) + '</b></td><td class="mono-num">' + money(c.price) + '</td><td class="mono-num">' + Math.round(c.rate * 100) + '%</td><td class="mono-num"><b>' + money(c.amount) + '</b></td></tr>';
+    }).join('');
+    return aHead('佣金分成', '合作机构按所荐病人实际购买的服务包档位获得分成。', 'Agent 端 · 佣金分成') +
+      '<div class="matchbar"><div class="matchbar__left">' +
+        '<div class="score"><strong>' + money(earned) + '</strong><span>已产生</span></div>' +
+        '<div><strong>佣金总览</strong><div class="tiny muted">待结算 ' + money(pending) + ' · 已结算 ' + money(settled) + '</div></div>' +
+      '</div></div>' +
+      '<div class="card card__pad" style="margin-bottom:22px">' +
+        '<div class="block-title" style="margin-top:0">分成规则（演示）</div>' +
+        '<table class="cost-table">' +
+          '<tr><td>服务包档位</td><td class="mono-num">平台服务费</td><td class="mono-num">Agent 分成比例</td><td class="mono-num">单笔佣金</td></tr>' +
+          ruleRows +
+        '</table>' +
+        '<div class="note" style="margin-top:14px">' + icon('shield', 15) + '<span>佣金在病人完成支付后计入「待结算」；病人行程结束、无争议后由平台结算至合作机构账户。分成比例与结算周期以正式合作协议为准。</span></div>' +
+      '</div>' +
+      '<div class="block-title">佣金明细</div>' +
+      '<table class="case-table"><thead><tr>' +
+        ['转诊号', '病人', '套餐', '费率', '基数', '佣金', '状态', '结算时间'].map(function (h) { return '<th>' + h + '</th>'; }).join('') +
+      '</tr></thead><tbody>' + ledger + '</tbody></table>';
+  }
+
+  function openReferralModal(id) {
+    var r = AG.referrals.filter(function (x) { return x.id === id; })[0];
+    if (!r) return;
+    var c = D.commissionFor(r.tier);
+    var kvs = kv('病人', esc(r.patient)) + kv('科室', esc(deptName(r.dept))) +
+      kv('目标城市', esc(L(D.city(r.city).name))) + kv('来源国家', esc(D.origin(r.origin).label || '')) +
+      kv('预期套餐', esc(agentTierName(r.tier))) + kv('创建时间', esc(r.createdAt)) + kv('状态', refStatusTag(r.status));
+    var comm = '<table class="cost-table">' +
+      '<tr><td>平台服务费基数</td><td class="mono-num">' + money(c.price) + '</td></tr>' +
+      '<tr><td>Agent 分成比例</td><td class="mono-num">' + Math.round(c.rate * 100) + '%</td></tr>' +
+      '<tr class="is-sum"><td>本笔佣金</td><td class="mono-num">' + money(r.commission) + '</td></tr></table>';
+    var note = r.note ? '<div class="field" style="margin-top:14px"><label class="field__label">转诊备注</label><div class="tiny muted">' + esc(r.note) + '</div></div>' : '';
+    var actions;
+    if (r.status === 'submitted' || r.status === 'consulting') {
+      actions = '<button class="btn btn--ghost btn--danger" data-act="refLost" data-id="' + r.id + '">标记流失</button>' +
+        '<button class="btn btn--ghost" data-act="closeModal">关闭</button>' +
+        '<button class="btn btn--primary" data-act="refPaid" data-id="' + r.id + '">标记患者已付费</button>';
+    } else if (r.status === 'paid') {
+      actions = '<button class="btn btn--ghost" data-act="closeModal">关闭</button>' +
+        '<button class="btn btn--primary" data-act="refSettled" data-id="' + r.id + '">结算佣金</button>';
+    } else {
+      actions = '<button class="btn btn--ghost" data-act="closeModal">关闭</button>';
+    }
+    openModal({
+      title: '转诊详情 · ' + esc(r.refNo), sub: esc(r.patient) + ' · ' + esc(deptName(r.dept)),
+      body: kvs + '<div class="block-title" style="margin-top:18px">佣金</div>' + comm + note,
+      foot: actions
+    });
+  }
+
+  /* ============================================================
      EVENTS
      ============================================================ */
   document.addEventListener('click', function (e) {
@@ -1386,7 +1590,7 @@
       case 'setRole': {
         var r = node.getAttribute('data-role');
         S.role = r; save();
-        go(r === 'patient' ? 'home' : 'backend');
+        go(r === 'patient' ? 'home' : (r === 'agent' ? 'agent-dashboard' : 'backend'));
         break;
       }
 
@@ -1463,6 +1667,43 @@
       }
       case 'resetCases':
         BK.cases = D.seedCases(); saveBackend(); toast('已重置案例库'); paint();
+        break;
+
+      /* ---------------- 合作机构端（Agent） ---------------- */
+      case 'viewReferral':
+        openReferralModal(node.getAttribute('data-id'));
+        break;
+      case 'refPaid': {
+        var rp = AG.referrals.filter(function (x) { return x.id === node.getAttribute('data-id'); })[0];
+        if (rp) { rp.status = 'paid'; saveAgent(); closeModal(); toast('已标记患者付费'); paint(); }
+        break;
+      }
+      case 'refSettled': {
+        var rset = AG.referrals.filter(function (x) { return x.id === node.getAttribute('data-id'); })[0];
+        if (rset) { rset.status = 'settled'; rset.settledAt = nowStamp(); saveAgent(); closeModal(); toast('佣金已结算'); paint(); }
+        break;
+      }
+      case 'refLost': {
+        var rlost = AG.referrals.filter(function (x) { return x.id === node.getAttribute('data-id'); })[0];
+        if (rlost) { rlost.status = 'lost'; saveAgent(); closeModal(); toast('已标记流失'); paint(); }
+        break;
+      }
+      case 'saveReferral': {
+        var pname = document.getElementById('fPatient'); pname = pname ? pname.value.trim() : '';
+        if (!pname) { toast('请填写病人称呼'); break; }
+        var fdept = val('fDept'), fcity = val('fCity'), fori = val('fOrigin'), ftier = val('fTier');
+        var fnote = document.getElementById('fNote'); fnote = fnote ? fnote.value : '';
+        var n = AG.referrals.length + 1;
+        AG.referrals.unshift({
+          id: 'R' + n, refNo: 'AG-2026-' + (1000 + n), patient: pname, dept: fdept, city: fcity,
+          origin: fori, tier: ftier, status: 'submitted', createdAt: nowStamp(),
+          commission: D.commissionFor(ftier).amount, note: fnote, settledAt: ''
+        });
+        saveAgent(); toast('转诊已提交'); go('agent-referrals');
+        break;
+      }
+      case 'resetReferrals':
+        AG.referrals = D.seedReferrals(); saveAgent(); toast('已重置示例数据'); paint();
         break;
 
       default:

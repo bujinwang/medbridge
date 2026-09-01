@@ -11,12 +11,12 @@
 
   /* ---------------- CITIES ---------------- */
   var CN = {
-    shanghai:  { lo: 'ຊຽງໄຮ', km: 'សាងហៃ' },
-    beijing:   { lo: 'ປັກກິ່ງ', km: 'ប៉េកាំង' },
-    guangzhou: { lo: 'ກວງໂຈວ', km: 'ក្វាងចូវ' },
-    chengdu:   { lo: 'ເຈິງຕູ', km: 'ឈុងទូ' },
-    hangzhou:  { lo: 'ຮາງຈົວ', km: 'ហ្សឺចូវ' },
-    boao:      { lo: 'ບໍໂຢວ, ໄຫໜ້າ', km: 'បូអាវ ហៃណាន' }
+    shanghai:  { ms: 'Shanghai', in: 'Shanghai', vi: 'Thượng Hải', tl: 'Shanghai', lo: 'ຊຽງໄຮ', km: 'សាងហៃ' },
+    beijing:   { ms: 'Beijing', in: 'Beijing', vi: 'Bắc Kinh', tl: 'Beijing', lo: 'ປັກກິ່ງ', km: 'ប៉េកាំង' },
+    guangzhou: { ms: 'Guangzhou', in: 'Guangzhou', vi: 'Quảng Châu', tl: 'Guangzhou', lo: 'ກວງໂຈວ', km: 'ក្វាងចូវ' },
+    chengdu:   { ms: 'Chengdu', in: 'Chengdu', vi: 'Thành Đô', tl: 'Chengdu', lo: 'ເຈິງຕູ', km: 'ឈុងទូ' },
+    hangzhou:  { ms: 'Hangzhou', in: 'Hangzhou', vi: 'Hàng Châu', tl: 'Hangzhou', lo: 'ຮາງຈົວ', km: 'ហ្សឺចូវ' },
+    boao:      { ms: 'Boao, Hainan', in: 'Boao, Hainan', vi: 'Boao, Hải Nam', tl: 'Boao, Hainan', lo: 'ບໍໂຢວ, ໄຫໜ້າ', km: 'បូអាវ ហៃណាន' }
   };
   D.CITIES.forEach(function (c) { if (CN[c.id]) Object.assign(c.name, CN[c.id]); });
 

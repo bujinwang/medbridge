@@ -29,6 +29,9 @@
     { id: 'sa-ruh', label: 'Saudi Arabia · Riyadh',  carrier: 'Saudia',             carrierName: 'Saudia',                   code: 'SV884 · MU270', hours: 9.6,  price: 6240 },
     { id: 'us-lax', label: 'USA · Los Angeles',      carrier: 'China Eastern',      carrierName: 'China Eastern Airlines',   code: 'MU586',         hours: 13.6, price: 8860 },
     { id: 'th-bkk', label: 'Thailand · Bangkok',     carrier: 'Thai Airways',       carrierName: 'Thai Airways',             code: 'TG664',         hours: 3.5,  price: 2640 },
+    { id: 'vn-sgn', label: 'Vietnam · Ho Chi Minh',  carrier: 'Vietnam Airlines',   carrierName: 'Vietnam Airlines',         code: 'VN502',         hours: 4.0,  price: 2280 },
+    { id: 'id-cgk', label: 'Indonesia · Jakarta',    carrier: 'Garuda Indonesia',   carrierName: 'Garuda Indonesia',         code: 'GA888',         hours: 6.5,  price: 3680 },
+    { id: 'my-kul', label: 'Malaysia · Kuala Lumpur',carrier: 'Malaysia Airlines',  carrierName: 'Malaysia Airlines',        code: 'MH360',         hours: 5.0,  price: 3180 },
     { id: 'jp-tyo', label: 'Japan · Tokyo',          carrier: 'ANA',                carrierName: 'All Nippon Airways',       code: 'NH959',         hours: 3.2,  price: 3480 },
     { id: 'de-ber', label: 'Germany · Berlin',       carrier: 'Lufthansa',          carrierName: 'Lufthansa',                code: 'LH7202 · CA932', hours: 11.2, price: 7480 }
   ];
@@ -595,12 +598,49 @@
     });
   }
 
+  /* ---------------- agent / B2B referral & commission (demo) ----------------
+     Southeast-Asia medical agents submit patient referrals through this entry
+     point; commission is earned on the service-package tier the patient buys. */
+  var AGENT_COMMISSION = {
+    A: { price: 99,   rate: 0.20 },
+    B: { price: 499,  rate: 0.15 },
+    C: { price: 1299, rate: 0.12 }
+  };
+  function commissionFor(tier) {
+    var c = AGENT_COMMISSION[tier] || AGENT_COMMISSION.A;
+    return { price: c.price, rate: c.rate, amount: Math.round(c.price * c.rate) };
+  }
+  function seedReferrals() {
+    var raw = [
+      { patient: 'Nguyen Thi H.',  dept: 'oncology',  city: 'shanghai',  origin: 'vn-sgn', tier: 'B', status: 'settled',    createdAt: '2026-08-11 09:24' },
+      { patient: 'Somsak P.',      dept: 'ortho',     city: 'chengdu',   origin: 'th-bkk', tier: 'A', status: 'paid',       createdAt: '2026-08-15 14:02' },
+      { patient: 'Putri A.',       dept: 'ivf',       city: 'guangzhou', origin: 'id-cgk', tier: 'C', status: 'consulting', createdAt: '2026-08-18 10:41' },
+      { patient: 'Lim W.',         dept: 'cardio',    city: 'shanghai',  origin: 'my-kul', tier: 'B', status: 'submitted',  createdAt: '2026-08-21 16:13' },
+      { patient: 'Tran Van D.',    dept: 'oncology',  city: 'boao',      origin: 'vn-sgn', tier: 'A', status: 'lost',       createdAt: '2026-08-09 11:08' },
+      { patient: 'Anong S.',       dept: 'aesthetic', city: 'chengdu',   origin: 'th-bkk', tier: 'C', status: 'paid',       createdAt: '2026-08-23 09:55' },
+      { patient: 'Budi R.',        dept: 'checkup',   city: 'hangzhou',  origin: 'id-cgk', tier: 'A', status: 'settled',    createdAt: '2026-08-12 13:30' }
+    ];
+    return raw.map(function (r, i) {
+      var c = commissionFor(r.tier);
+      return {
+        id: 'R' + (i + 1), refNo: 'AG-2026-' + (1001 + i), patient: r.patient,
+        dept: r.dept, city: r.city, origin: r.origin, tier: r.tier,
+        status: r.status, createdAt: r.createdAt,
+        commission: c.amount,
+        note: r.status === 'lost' ? '病人选择本地治疗，未成行。' : '',
+        settledAt: r.status === 'settled' ? '2026-08-2' + ((i % 8) + 2) + ' 11:0' + (i % 6) + ' (GMT+8)' : ''
+      };
+    });
+  }
+
   global.DATA = {
     CITIES: CITIES, ORIGINS: ORIGINS, BUDGETS: BUDGETS, DOCTORS: DOCTORS,
     MEDICAL: MEDICAL, DEPT_IDS: DEPT_IDS, TIERS: TIERS, ADDONS: ADDONS,
     PARTNERS: PARTNERS, SAMPLE_FILES: SAMPLE_FILES, HOSPITALS: HOSPITALS,
     TRANSFER_MODELS: TRANSFER_MODELS, TRANSFER_GRADES: TRANSFER_GRADES, NURSE_FEE: NURSE_FEE,
+    AGENT_COMMISSION: AGENT_COMMISSION,
     city: city, origin: origin, budget: budget, buildPlans: buildPlans, fmt: fmt,
+    commissionFor: commissionFor, seedReferrals: seedReferrals,
     seedOrders: seedOrders, seedCases: seedCases
   };
 })(window);
