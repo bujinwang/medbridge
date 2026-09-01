@@ -900,4 +900,5 @@
   }
 
   global.I18N = { t: t, LANGS: LANGS, setLang: setLang, getLang: function () { return current; } };
+  global.MB_DICT = DICT; // exposed so js/i18n-extra.js can merge additional languages
 })(window);
