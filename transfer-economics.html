@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="zh-CN" data-page-node-id="WzvbO3YiYjhSacx0nAVM0B">
+<head data-page-node-id="otIjNEgukO5wEKco7yqzhn">
+<meta charset="utf-8" data-page-node-id="8ktTfiEknoZa09VVdbPt24">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="tNriSgLwykqGa0pBT09DRR">
+<title>MedBridge · 机场接驳用车经济测算（救护车 vs 商务车）</title>
+<style>
+:root{
+  --bg:#F4F7F9; --surface:#FFFFFF; --surface-2:#F8FBFC; --surface-3:#EEF4F7;
+  --border:#E2EAF0; --border-strong:#CFDCE4;
+  --text:#0F2029; --text-2:#57707F; --text-3:#8CA2AF;
+  --primary:#0E7C86; --primary-700:#0A636B; --primary-100:#DEF3F4; --primary-50:#EFFAFB;
+  --accent:#E0821B; --accent-100:#FDF1E1;
+  --success:#0F9D58; --success-100:#E2F5EC;
+  --warn:#C88A00; --warn-100:#FCF3DC;
+  --danger:#D63B45; --danger-100:#FCE9EA;
+  --violet:#6B4FE0; --violet-100:#EDE9FD;
+  --r-sm:8px; --r:12px; --r-lg:18px; --r-xl:24px;
+  --sh-1:0 1px 2px rgba(15,32,41,.05);
+  --sh-2:0 2px 6px rgba(15,32,41,.05), 0 12px 28px rgba(15,32,41,.06);
+  --maxw:1180px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:650;letter-spacing:-.01em;line-height:1.28}
+p{margin:0}
+a{color:inherit}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select{font-family:inherit;font-size:inherit;color:inherit}
+
+.topbar{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.9);backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--border)}
+.topbar__inner{max-width:var(--maxw);margin:0 auto;height:60px;padding:0 24px;display:flex;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand__mark{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(140deg,var(--primary),#12A3AC);color:#fff}
+.brand__text{display:flex;flex-direction:column;line-height:1.15}
+.brand__text strong{font-size:15px;letter-spacing:-.02em}
+.brand__text em{font-style:normal;font-size:11px;color:var(--text-3)}
+.badge{margin-left:auto;font-size:11px;padding:4px 10px;border-radius:99px;background:var(--warn-100);color:var(--warn);font-weight:500}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:32px 24px 72px}
+.page-h{font-size:26px;margin-bottom:8px}
+.page-sub{color:var(--text-2);max-width:760px;margin-bottom:26px}
+
+.verdict{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--primary);border-radius:var(--r-lg);padding:20px 24px;box-shadow:var(--sh-1);margin-bottom:30px}
+.verdict h2{font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.verdict h2 span.dot{width:8px;height:8px;border-radius:50%;background:var(--primary);flex:none}
+.verdict ul{margin:10px 0 0;padding-left:0;list-style:none;display:grid;gap:7px}
+.verdict li{padding-left:16px;position:relative;color:var(--text-2)}
+.verdict li::before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%;background:var(--border-strong)}
+.verdict li b{color:var(--text);font-weight:600}
+
+section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;box-shadow:var(--sh-1)}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.sec-h h3{font-size:16px}
+.sec-h .num{font-size:11px;font-weight:600;color:var(--primary);background:var(--primary-100);padding:2px 8px;border-radius:6px}
+.sec-sub{color:var(--text-3);font-size:13px;margin-bottom:20px}
+
+.ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:20px}
+.ctrl label{display:block;font-size:12px;color:var(--text-2);margin-bottom:8px}
+.ctrl label b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.ctrl input[type=range]{width:100%;accent-color:var(--primary)}
+.ctrl .hint{font-size:11px;color:var(--text-3);margin-top:5px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.kpi{background:var(--surface-2);border-radius:var(--r);padding:14px 16px}
+.kpi .k{font-size:12px;color:var(--text-2);margin-bottom:4px}
+.kpi .v{font-size:23px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi .n{font-size:11px;color:var(--text-3);margin-top:3px}
+.kpi.is-good .v{color:var(--success)}
+.kpi.is-warn .v{color:var(--warn)}
+.kpi.is-bad .v{color:var(--danger)}
+
+.chart-box{position:relative;width:100%}
+.chart-box.bar{height:250px}
+.chart-box.line{height:300px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:10px;font-size:12px;color:var(--text-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--border)}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);font-weight:600}
+td{vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;white-space:nowrap}
+.tag.g{background:var(--success-100);color:var(--success)}
+.tag.a{background:var(--accent-100);color:var(--accent)}
+.tag.r{background:var(--danger-100);color:var(--danger)}
+.tag.v{background:var(--violet-100);color:var(--violet)}
+.tag.p{background:var(--primary-100);color:var(--primary-700)}
+
+.matrix{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{border:1px solid var(--border);border-radius:var(--r);padding:16px;background:var(--surface-2)}
+.card h4{font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.card .who{font-size:12px;color:var(--text-2);margin-bottom:10px}
+.card .pick{font-size:13px;padding-top:10px;border-top:1px dashed var(--border-strong)}
+.card .pick b{font-weight:650}
+.card .share{font-size:11px;color:var(--text-3);margin-top:4px}
+.swatch{width:10px;height:10px;border-radius:3px;flex:none}
+
+.rules{display:grid;gap:10px}
+
+.fee-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fee-card{border:1px solid var(--border);border-radius:var(--r);padding:18px 18px 14px;background:var(--surface-2)}
+.fee-card h4{font-size:14px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.fee-card.amb{border-color:rgba(224,130,27,.4);background:#FFF8EF}
+.fee-card.amb h4{color:var(--accent);border-color:rgba(224,130,27,.25)}
+.fee-rows{display:grid;gap:2px}
+.fee-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:13px;border-bottom:1px dashed var(--border)}
+.fee-row .num{font-variant-numeric:tabular-nums;font-weight:500}
+.fee-row .muted{color:var(--text-3);font-weight:400}
+.fee-row.opt{color:var(--text-2)}
+.fee-row.total{border-bottom:0;border-top:2px solid var(--border);margin-top:6px;padding-top:11px;font-weight:650;font-size:14px}
+.fee-total{margin-top:10px;font-size:15px;font-weight:650;color:var(--primary-700);text-align:right}
+.fee-card.amb .fee-total{color:var(--accent)}
+@media (max-width:680px){.fee-cols{grid-template-columns:1fr}}
+.rule{display:flex;gap:12px;padding:13px 15px;border-radius:var(--r);background:var(--danger-100);border:1px solid rgba(214,59,69,.18)}
+.rule .ic{width:22px;height:22px;border-radius:6px;background:var(--danger);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+.rule b{display:block;font-size:13px;color:var(--danger);margin-bottom:2px}
+.rule p{font-size:12.5px;color:#8a2f36}
+
+.notes{font-size:12px;color:var(--text-3);line-height:1.75}
+.notes b{color:var(--text-2)}
+.notes ol{margin:6px 0 0;padding-left:18px}
+.footer{max-width:var(--maxw);margin:0 auto;padding:0 24px 40px;font-size:12px;color:var(--text-3);line-height:1.7}
+@media (max-width:640px){.page-h{font-size:22px}.wrap{padding:22px 16px 56px}}
+</style>
+</head>
+<body data-page-node-id="kxrXqCN5qRZ5s3nYcMDVgO">
+
+<header class="topbar" data-page-node-id="W4N2dFU72uCdDhz1KAelPN">
+  <div class="topbar__inner" data-page-node-id="TfbYMZU4QYeuXf79UHsxlj">
+    <div class="brand" data-page-node-id="S0bHl9ISrVsJ9nKcLDF4Jy">
+      <span class="brand__mark" data-page-node-id="TgGPW3V9W3oN908Ac9rmc1">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" data-page-node-id="Hp7rdVr9mEmHtSy2WMwpRw">
+          <path d="M12 2.5 4 6v6.2c0 5 3.4 8.3 8 9.3 4.6-1 8-4.3 8-9.3V6l-8-3.5Z" fill="currentColor" opacity=".2" data-page-node-id="5WfFxHnflTqJax4K5ZLKNY"/>
+          <path d="M12 6.6v7.8M8.4 10.5h7.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none" data-page-node-id="OHRaoXdJTsCEnPylEhDqCR"/>
+        </svg>
+      </span>
+      <span class="brand__text" data-page-node-id="27wCC0O8rowK56dMsAImMI"><strong data-page-node-id="rT7VQILD4WO7TA8LwpU4qg">MedBridge</strong><em data-page-node-id="OfEq28DjiA4VFBjvVOboCB">接驳运力经济测算 · 内部决策用</em></span>
+    </div>
+    <span class="badge" data-page-node-id="qB8NAX7uiALbFeKtgmoovJ">示例数据 · 需落地询价复核</span>
+  </div>
+</header>
+
+<div class="wrap" data-page-node-id="AIFxWhh8zNLtCFP6j64T3n">
+  <h1 class="page-h" data-page-node-id="GnJtTLrdkDIWCw2Cr2Xxu2">机场 → 医院：救护车还是商务车？</h1>
+  <p class="page-sub" data-page-node-id="cAUqAJicjTiVXGCn0DHMAE">跨境医疗旅客落地后的第一段接驳，用什么车。这不只是买车钱的差别，而是<b data-page-node-id="G8MuVbFC0AVAfzCZEnrR6H">单趟配置人数 × 利用率</b>的差别。下面把两种运力的市场价、自营成本、盈亏平衡点和合规门槛一次算清。</p>
+
+  <div class="verdict" data-page-node-id="zMiFYPSKwAQhtlnnuskqxm">
+    <h2 data-page-node-id="HtkObVs9mPH10sZrEDiSun"><span class="dot" data-page-node-id="HBdYCxQowz3019dfhVO7C1"></span>结论先给</h2>
+    <ul data-page-node-id="ow2l0tVBifRd4dlOfL2xQq">
+      <li data-page-node-id="jkOTA2L1sVE7fs6dN1r7B0"><b data-page-node-id="qD0uLaEkcjsmaBLBBSXUQ1">单趟市场价：救护车只比 GL8 贵约 35%，比埃尔法还便宜。</b>40 公里接机，C 级普通型约 690 元，GL8 约 510 元，埃尔法约 1,070 元。价格不是障碍。</li>
+      <li data-page-node-id="hC4IccJOK2ETY5zpwcfCjO"><b data-page-node-id="IphlKEUpueBEyCA7RsXGIB">真正的差别在固定成本。</b>非急救转运车按规最低配 3 人（驾驶员 + 担架员 + 随车照护），商务车只要 1 个司机。同样一辆车，年固定成本 34 万 vs 18 万。</li>
+      <li data-page-node-id="beQ9mr2CJy4gsTP5Ef868d"><b data-page-node-id="EtDckeNBTqAlffXzhfsQc8">盈亏平衡点：救护车自营要每天稳定 2.1 趟才回本，商务车 1.5 趟就够。</b>而跨境医疗旅客里真正需要救护车的通常不到两成——按 8 单/天算只有 1.2 趟，自营单趟摊到 1,077 元，是外包价 690 元的 1.6 倍。<b data-page-node-id="0kMCrIcKzP1s1orXgvBO4p">救护车必须外包，商务车可以自营。</b></li>
+      <li data-page-node-id="D7GzvLQu9SfxMXYHbvZGPZ"><b data-page-node-id="OLpVA1fzhuQOgzHeyENw61">合规是硬门槛。</b>非急救转运须与辖区内公立医疗机构签合作协议、专用车辆、明码标价备案，且不得装警灯警报器、不得喷「120」标识。</li>
+      <li data-page-node-id="BqbPXRFFSJz5SABQFdCCYc"><b data-page-node-id="LPU5iFfJCCM1WD5Ez6VfYY">体验反过来压成本。</b>体检、复查、医美、辅助生殖这类旅客是坐着的，看到救护车接机反而焦虑。分层接驳既省钱也更好卖。</li>
+    </ul>
+  </div>
+
+  <section data-page-node-id="soMMRfdGjIUWaaCbTlCc4S">
+    <div class="sec-h" data-page-node-id="nwi0bfxDgS9jGv0wuutQ99"><span class="num" data-page-node-id="xc1FzzELHxF2RpvJtH7WZZ">01</span><h3 data-page-node-id="giHOUckGEXC2wjtJy5coUr">单趟市场到手价</h3></div>
+    <p class="sec-sub" data-page-node-id="lVZ21V7RcUDeT1QZE2kzrU">外包/叫车口径，含司机与过路费。拖动距离看各车型随里程的变化。</p>
+
+    <div class="ctrl" data-page-node-id="dC1s5Vw0DZTLP0aD3sxCnW">
+      <div data-page-node-id="QJvv5YkAUQqYIbXNeNWQgM">
+        <label data-page-node-id="vfnJpOxvvibAT10F2eTfJv">机场 → 医院单程距离 <b data-page-node-id="gQTVHI5z7g7ew3v6bWN6l2"><span id="distV" data-page-node-id="ApyNSCF8xh5blE8T3mBNyA">40</span> 公里</b></label>
+        <input type="range" id="dist" min="8" max="90" step="1" value="40" data-page-node-id="8UaJXspGKvKc3j4goBnOfK">
+        <div class="hint" data-page-node-id="OQMjpniBcLbugqNjGtFQSH">首都/大兴/浦东 → 市区三甲医院常见 30–55 公里</div>
+      </div>
+      <div data-page-node-id="tArMowkbDFdpANI8KV3Ccd">
+        <label data-page-node-id="VABSJLJdKYDx9kMEpGl2Ij">是否加派医护（护士）随车 <b id="nurseV" data-page-node-id="eqJ1yrf6kQ6zEjn0bHgB6a">不加</b></label>
+        <input type="range" id="nurse" min="0" max="1" step="1" value="0" data-page-node-id="pkC2eLCubSCgOFnSG52kzp">
+        <div class="hint" data-page-node-id="tCd5ThAEbF0zKIDeKpvazd">约 +400 元/趟；术后、带引流管、需吸氧时建议加</div>
+      </div>
+    </div>
+
+    <div class="legend" id="leg1" data-page-node-id="4z0AYuHNP1XzFbBMEBdHji"></div>
+    <div class="chart-box bar" data-page-node-id="vZNLCrS0AvXmYmAsCVuZdd"><canvas id="c1" role="img" aria-label="不同车型在同一距离下的单趟到手价对比条形图" data-page-node-id="GgWYyKfbgWL4yDdvdcBtJ0">车型单趟价格对比图</canvas></div>
+    <p class="notes" style="margin-top:14px" data-page-node-id="YzstBb2f6o1EnP2AZyUe7F">口径：救护车按分级基础费 + 超程公里费 + 过路费实报实销；商务车按机场接送起步价（含 30 公里）+ 超程费 + 过路费停车费。<b data-page-node-id="UCL4DFFrtlyrshtxSUrkAK">C 级基础费为区间内插估计值，落地必须逐家询价。</b></p>
+  </section>
+
+  <section data-page-node-id="AywFOEj7l4KHMzPRa6Ofzv">
+    <div class="sec-h" data-page-node-id="3h6imZDJV7CgCRfrFTdavk"><span class="num" data-page-node-id="awKrzXbtkbkllVBpXPn6P2">02</span><h3 data-page-node-id="9cjwotQRS84GpeeM1hGZhP">自营 vs 外包：盈亏平衡点</h3></div>
+    <p class="sec-sub" data-page-node-id="4l1F5o9CpFujTSCPwzVaGh">自营要摊折旧、保险、人员和固定开销。趟数越少，每趟摊得越贵——救护车因为要养 3 个人，跌得最狠。</p>
+
+    <div class="ctrl" data-page-node-id="1Osqzk0FJwKOCtgcH2izGK">
+      <div data-page-node-id="CvaQKJ3cGOGA4rv2CStszw">
+        <label data-page-node-id="3WH3F9loSTZsUXrrrOVrN3">平台每日接单量 <b data-page-node-id="eWAuH7CwOVs5sFFdlm6eG0"><span id="volV" data-page-node-id="AKIOstd5igADZOp7DtOkz5">8</span> 单/天</b></label>
+        <input type="range" id="vol" min="1" max="40" step="1" value="8" data-page-node-id="ttl16dBeLcUgHSogNSWoeh">
+        <div class="hint" data-page-node-id="x53lY8HhVakL5J1DKssf2W">按 300 个运营日折算年趟数</div>
+      </div>
+      <div data-page-node-id="nHbpCOArgJAzCf7tsiLJ07">
+        <label data-page-node-id="GyTXXpqZhKRK3STUJP4Gf3">其中需要救护车的比例 <b data-page-node-id="V3xZ6kg4lx6KhEGAWJIksX"><span id="shareV" data-page-node-id="GG6hRCwKDVHYfEfei3fh85">15</span>%</b></label>
+        <input type="range" id="share" min="0" max="60" step="1" value="15" data-page-node-id="qpaLU0qAfWmi2dF7bXttRW">
+        <div class="hint" data-page-node-id="iymvqnGfE4PZhKeXv7q0Du">卧床/担架/吸氧/术后转院；其余可坐可走</div>
+      </div>
+    </div>
+
+    <div class="kpis" id="kpis" data-page-node-id="XMcitPTD0YqpgEUouNZylN"></div>
+
+    <div class="legend" id="leg2" data-page-node-id="CJZDwLmCMfClz3Vg4nR1lE"></div>
+    <div class="chart-box line" data-page-node-id="xCgiC0JMuDGSrbK6JQy3G3"><canvas id="c2" role="img" aria-label="自营单趟成本随每日趟数下降的折线图，与外包市场价参考线对比" data-page-node-id="i1blaCW0UpQUCp1SCUdw7D">自营成本随利用率变化折线图</canvas></div>
+
+    <div style="margin-top:22px" data-page-node-id="oiaIdxCVA57F4gr1pKHzGj">
+      <table id="beTable" data-page-node-id="t7vOgPAoJXPAg1hAHTKSj4">
+        <thead data-page-node-id="MdIbh2uaoEKuYugwfrT7XW"><tr data-page-node-id="azJLrEX5UMsDaJzAKrbqea"><th data-page-node-id="AIM2mnYN8tLX8YvRRt7ISg">运力</th><th class="num" data-page-node-id="OX3ujIzRPHK3KqbZvZCuwq">年固定成本</th><th class="num" data-page-node-id="ZYMcdQ1aCqphCX90P64Bp6">单趟变动成本</th><th class="num" data-page-node-id="oXHld7SlF1MLq2CmC1O6UR">外包市场价</th><th class="num" data-page-node-id="OKGBWkJLx3GlQQoEJrSIjp">自营盈亏平衡点</th><th data-page-node-id="HFt2HVD0tlU3ToXyKNabzt">当前结论</th></tr></thead>
+        <tbody data-page-node-id="Lhwc6GHUxB5O5Y4APVt9hP"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section data-page-node-id="OuIhI0UI6oZOCjqlrc7rc0">
+    <div class="sec-h" data-page-node-id="BgegAuaODuvCQuR3ojv9CE"><span class="num" data-page-node-id="S3Anspf1nijpGmStl9TucU">03</span><h3 data-page-node-id="BGuqukHwSOH9aCXK1FVh6n">分层接驳：什么人上什么车</h3></div>
+    <p class="sec-sub" data-page-node-id="T7Vy1xnZM2Dux2ii44N3bC">在需求评估阶段就把车型定下来，比到了机场再临时叫车便宜得多，也不会出现「救护车在门口等人两小时」的空转。</p>
+    <div class="matrix" id="matrix" data-page-node-id="14IUyHLLRkISXaHrfKqW1c"></div>
+  </section>
+
+  <section data-page-node-id="QLtozbjavCL7Ic1og1MDQI">
+    <div class="sec-h" data-page-node-id="ISupYxFfspI8rduRqWoX4Q"><span class="num" data-page-node-id="LYAAN1XzS1w0g5S20yivUG">04</span><h3 data-page-node-id="ibpqptdXoJvxKHlTJij7an">入境接驳费用清单（行项拆解）</h3></div>
+    <p class="sec-sub" data-page-node-id="bs8R7eAr5obYC1m6xcg1U0">同样的距离、同一名可选的护士，把两种运力的账拆开看。要点：<b data-page-node-id="inuvmX5Gov69V1fR4JDcr8">转运车报价里已经含了随车照护员</b>（合规强制的 3 人配置），所以「加派护士」是两边都一样的升级项，不拉开差距——差距来自病人需要哪一级照护。</p>
+    <div class="fee-cols" data-page-node-id="MFnExpWbyUo1o5fftRVih9">
+      <div class="fee-card" data-page-node-id="nBMa4qNuw0PJ0Kdcf6SDX4">
+        <h4 data-page-node-id="BECoas6veV588GfYCsJP2w">商务车方案（GL8，带司机）</h4>
+        <div class="fee-rows" id="vanRows" data-page-node-id="yQG82uDxleGi83jZPhGBmQ"></div>
+        <div class="fee-total" id="vanTotal" data-page-node-id="tQKZkGC9VEm4itfVi1Fqb7"></div>
+      </div>
+      <div class="fee-card amb" data-page-node-id="MFuqvwntyv9sOpvAu6Kwte">
+        <h4 data-page-node-id="aomDKNwNAz11bTXuEUdjS2">转运车方案（C 级普通型）</h4>
+        <div class="fee-rows" id="ambRows" data-page-node-id="kD4BumSPLLnAzS0kexq5LU"></div>
+        <div class="fee-total" id="ambTotal" data-page-node-id="zna4vYGwSp7RsDDzzTy4fa"></div>
+      </div>
+    </div>
+    <p class="notes" style="margin-top:16px" data-page-node-id="AYILudGgcwa4ZOZOXf5Wox">口径：商务车按「起步价（含 30 公里）+ 超程 + 过路停车」；转运车按「出车基础费（含 20 公里）+ 超程 + 过路费」，<b data-page-node-id="Y4GIfqlq51kDdmDMJsxPx6">随车照护员与基础担架/吸氧已含在基础费内</b>。加派护士（注册护士 RN 跟车）为两者共用的升级项，模型取 +¥400，市场化区间约 400–800 元/趟，按城市与资质浮动，务必逐家询价。在上方滑块里切换「加派护士」即可看到两列同步出现这一行。</p>
+  </section>
+
+  <section data-page-node-id="SJIsR2TWip0w292aseBBIJ">
+    <div class="sec-h" data-page-node-id="8177Mh4zKPxjsHDKKSQ5zF"><span class="num" data-page-node-id="BQEsdLI5j63I457udKSWqU">05</span><h3 data-page-node-id="oby4J1QprJw1WWVKCLj82A">合规红线（踩一条就停摆）</h3></div>
+    <p class="sec-sub" data-page-node-id="obK7m1fPfjMojeUXCX0mgi">依据国家卫健委非急救转运相关规定要点整理，落地前请以属地卫健部门口径为准。</p>
+    <div class="rules" data-page-node-id="vM5xI7CEITDyMB5BOuGWDd">
+      <div class="rule" data-page-node-id="I6728jOm6JxvdkSzWJtFZF"><span class="ic" data-page-node-id="QMKj2uZDFU93GcmFZaJeGK">1</span><div data-page-node-id="oKNQxHMAk3Bjf7lkBN1RAb"><b data-page-node-id="84m4jlbDdxsHVkBuwNsPju">必须与公立医疗机构签合作协议</b><p data-page-node-id="3DKMnUiLq21o93QTQRF520">非急救转运实行「市场运作、协议管理」，符合资质的企业须与辖区内公立医疗机构签订合作协议方可运营。平台自己是签不了这个协议的，只能挂靠或与具备资质的转运公司合作。</p></div></div>
+      <div class="rule" data-page-node-id="RgT5vDffP1SNVMqFjEB7mW"><span class="ic" data-page-node-id="YsuC67BHCMeRXjcroZEO8A">2</span><div data-page-node-id="ljimFdl0gQc3jcWss9nNFw"><b data-page-node-id="CYiBKjjF8uvb0iOx3wBORf">每车最低 3 人配置</b><p data-page-node-id="p2u8pdKpa7diEohFPXzIdv">驾驶员（持 B1 满 3 年、无重大责任事故记录）+ 担架员 + 随车照护人员，均须为企业签约员工并持救护员培训合格证。这就是救护车年固定成本压不下来的根本原因。</p></div></div>
+      <div class="rule" data-page-node-id="pOAoEWVIPoT1HxVEdJBFo3"><span class="ic" data-page-node-id="eeqntjSWdpNrLpDaOeyWs1">3</span><div data-page-node-id="In5T3Yt0t4i3W58W1ExDmr"><b data-page-node-id="XTMEwnbScN5aMvwnFvd1iK">外观与设备有硬约束</b><p data-page-node-id="x2KlVHztzDQdOwL0qmvKxM">统一喷涂运营单位名称、服务内容、电话及「非急救转运服务」字样；<b data-page-node-id="AK3SnO2zZBUvEvVYwOz4th">不得配备警灯警报器，不得喷涂「120」「急救中心」「红十字」标识</b>；须装卫星定位与经检定合格的里程计量装置，按里程收费。可选氧气瓶、呼吸囊、紫外消毒灯，不得配其他医疗设备。</p></div></div>
+      <div class="rule" data-page-node-id="mlR8jyRuXfWQ1OJ7ovavTX"><span class="ic" data-page-node-id="yonTv6qtBZVk9zvkhxjwkd">4</span><div data-page-node-id="uYBo6B06zTQi63GApFC8ah"><b data-page-node-id="FsbeQmbPAF1kxNDXHyb43g">专车专用，不得超范围运营</b><p data-page-node-id="p0zsbCsctlZbnhd4AdEuhL">不得私自拆座位、改装或超范围运营；须明码标价并公开收费标准。商务车接驳同样需要汽车租赁/网约车营运资质，不能拿私家车接客。</p></div></div>
+      <div class="rule" data-page-node-id="Hp0lQlk18KXr7rEv5bAszI"><span class="ic" data-page-node-id="YzSMlkT3oaLM0LhqMCOOlx">5</span><div data-page-node-id="zHVBxRImeY3FDTIGuCL80k"><b data-page-node-id="N2c5oFPaAI5KD3yy48ZrCj">服务边界必须写进用户协议</b><p data-page-node-id="ru4cpRrb3uCGh416lMyuVp">非急救转运≠120 急救，只适用于生命体征平稳者。转运途中病情恶化须立即拨打 120。平台须在预订环节做病情分级，并留存评估记录。</p></div></div>
+    </div>
+  </section>
+
+  <section data-page-node-id="M99oGOSlYGhLRDPhxwHRtC">
+    <div class="sec-h" data-page-node-id="B0xEtjtC2d7FXlJzu3DYxw"><span class="num" data-page-node-id="myi6E7w2U2cUaIoSC7lQSJ">06</span><h3 data-page-node-id="stbda4pCo8AlFa5283zhEV">建议动作</h3></div>
+    <div class="verdict" style="border-left-color:var(--accent);margin:0;box-shadow:none;border:1px solid var(--border);border-left:4px solid var(--accent)" data-page-node-id="4yQiEfgiWOm3kTDBUpYtVH">
+      <ul data-page-node-id="hCaegTdGMCnTpF4BvipxrC">
+        <li data-page-node-id="3D0Dd2FaSu6497LZA8JBNM"><b data-page-node-id="T7PrWxYirllCVG7j5FDEHg">商务车自营或长约包月</b>，作为默认运力。按 8 单/天、约 6.8 趟/天算，需配 3 辆车，自营单趟约 363 元，比叫车 510 元省近三成，且调度和品牌体验可控。</li>
+        <li data-page-node-id="7R0bwUjPnlhJBsBMnqD0eL"><b data-page-node-id="tim63HI7VF6tUj8iyeZoZY">救护车做成「按需外包 + 框架协议」</b>，跟 2–3 家持牌转运公司签年框，锁定价目表和响应时限（如 T+90 分钟到位），按趟结算，不养车不养人。</li>
+        <li data-page-node-id="MJ05p98JLA1zt84IQPoX7x"><b data-page-node-id="m4s0bpt5ZskoqEJ7kas9rE">把车型判断前置到需求评估环节</b>，用分级问卷（能否自主行走 / 是否需要吸氧 / 是否带引流或监护设备）自动推荐车型，并在报价单上单列「医疗接驳升级」加价项。</li>
+        <li data-page-node-id="BDXBE5PHcE8gGAojPAeifR"><b data-page-node-id="NWh7ivFwKHBHnu9dmKJJCj">加价要公开透明。</b>救护车升级项建议按成本 + 合理毛利标价，避免落到「天价救护车」那种舆论坑里——这一块市场监管查的是明码标价。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section data-page-node-id="X0CMFLan8gshgqPkFJgj3E">
+    <div class="sec-h" data-page-node-id="jGlEt1ZtI7ANZEAETnSfPI"><span class="num" data-page-node-id="Bz26hDciKMTEByweQN821J">07</span><h3 data-page-node-id="9WTYFR0fzGP6gNCl5eWy6k">数据口径与存疑项</h3></div>
+    <div class="notes" data-page-node-id="LbCA282QGyZlqnlPKhcqni">
+      <ol data-page-node-id="8p4WEU6erFWXgMbs87roLo">
+        <li data-page-node-id="xInTgDz0ZpzXyc1KCjsPoG">商务车：GL8 带司机日租 700–1000 元（8 小时/100 公里，北京五环内），贵宾机场接送 400–500 元/次；埃尔法日租 1600–2000 元/天。来源为租车服务商公开报价体系（2026-08）。</li>
+        <li data-page-node-id="qwvmMGLtgez3yEO2mQsEDT">救护车（非急救转运，市场化定价，无全国统一政府定价）：长途监护型 5–8 元/公里，重症 ICU 型 8–10 元/公里；市内短途起步包干 300–600 元/趟；分级报价 A 级监护型 50 公里内 980 元起、超程 12 元/公里，B 级诊疗型基础费 680 元。<b data-page-node-id="FtPg8TDvP9GFYCgOpNgieD">C 级普通型基础费原文缺失，本模型按 480 元估计，属最大不确定项。</b></li>
+        <li data-page-node-id="OtcxlAjpRfsP1mIhRNBuEd">运力折算：机场接驳单程 40 公里约 50 分钟，加等待与空驶回程，一趟约占 2.5 小时；按每日 8 小时有效工时，模型取<b data-page-node-id="gWA6C6U2zTLpaZgELjfcVK">每车每天 3 趟</b>。需要几辆车 = 日趟数 ÷ 3 向上取整。这个假设直接决定自营成本，务必按实际航班密度复核。</li>
+        <li data-page-node-id="C5RvsyXC9DDVGxkPzy06wP">自营成本为建模假设：救护车整车 28 万元（监护型、国产底盘）按 5 年折旧，保险 1.5 万/年，人员 24 万/年（司机 8 万 + 担架员 6 万 + 随车照护 10 万），管理停车调度 3 万/年；商务车整车 35 万元按 5 年折旧，保险 1 万/年，司机 8 万/年，管理 2 万/年。变动成本含油费保养与过路费。<b data-page-node-id="XkbVaDsUsCeyXHlz8qFxjj">薪酬需按实际城市复核。</b></li>
+        <li data-page-node-id="T0Qw0mAwoHeTV9v2lDcqZz">网传「国家卫健委 2026 年统一非急救转运起步价 99 元、每公里 1 元」的说法，仅见于非官方域名站点，<b data-page-node-id="B0HsmpkE2aMcJwGo38C7rx">未在卫健委官网检索到对应文件，本模型未采用，请勿据此报价。</b></li>
+        <li data-page-node-id="ccHVfXtlFTaDf7OByHlTXI">本页所有数字为决策辅助用的测算值，不构成报价、要约或合规意见。落地前须向当地持牌转运公司与租车服务商逐项询价，并向属地卫健、交通部门确认资质口径。</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<footer class="footer" data-page-node-id="FZdyjdZyJVQzKyDvD4uSjc">
+  MedBridge · 接驳运力经济测算 · 内部决策用页面。所有价格与成本均为示例或建模估算，需以实际询价与当地政策为准。
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var RATES = [
+    {id:'van_gl8', name:'GL8 商务车（带司机）', base:380, incl:30, perKm:8,  toll:50, color:'#0E7C86', kind:'van'},
+    {id:'amb_c',   name:'救护车 · C 级普通型',  base:480, incl:20, perKm:8,  toll:50, color:'#E0821B', kind:'amb'},
+    {id:'amb_b',   name:'救护车 · B 级诊疗型',  base:680, incl:20, perKm:8,  toll:50, color:'#D63B45', kind:'amb'},
+    {id:'amb_a',   name:'救护车 · A 级监护型',  base:980, incl:50, perKm:12, toll:50, color:'#8F2230', kind:'amb'},
+    {id:'van_alph',name:'丰田埃尔法（带司机）', base:900, incl:30, perKm:12, toll:50, color:'#6B4FE0', kind:'van'}
+  ];
+  var NURSE = 400;
+
+  var FLEET = {
+    amb: {label:'救护车（非急救转运）', vehicle:280000, life:5, insurance:15000, mgmt:30000, varPerKm:2.0, toll:50,
+          crew:[{k:'驾驶员（B1，满 3 年）',v:80000},{k:'担架员',v:60000},{k:'随车照护 / 护士',v:100000}], color:'#D63B45'},
+    van: {label:'GL8 商务车（陆尊）',   vehicle:350000, life:5, insurance:10000, mgmt:20000, varPerKm:1.2, toll:50,
+          crew:[{k:'商务司机',v:80000}], color:'#0E7C86'}
+  };
+  var OUTSOURCE = {amb:'amb_c', van:'van_gl8'};
+  var DAYS = 300;
+  var TRIPS_PER_VEHICLE = 3;
+
+  function tripPrice(r, dist, nurse){
+    var extra = Math.max(0, dist - r.incl) * r.perKm;
+    var n = (r.kind === 'amb' && nurse) ? NURSE : 0;
+    return r.base + extra + r.toll + n;
+  }
+  function annualFixed(f){
+    var s = f.vehicle / f.life + f.insurance + f.mgmt;
+    f.crew.forEach(function(c){ s += c.v; });
+    return s;
+  }
+  function fleetSize(totalTripsPerDay){
+    return Math.max(1, Math.ceil(totalTripsPerDay / TRIPS_PER_VEHICLE));
+  }
+  function ownTripCost(f, dist, totalTripsPerDay){
+    var cars = fleetSize(totalTripsPerDay);
+    var yearly = Math.max(1, totalTripsPerDay * DAYS);
+    return annualFixed(f) * cars / yearly + f.varPerKm * dist + f.toll;
+  }
+  function breakevenTrips(f, dist, outsourcePrice){
+    var margin = outsourcePrice - (f.varPerKm * dist + f.toll);
+    if (margin <= 0) return Infinity;
+    return annualFixed(f) / margin / DAYS;
+  }
+  function breakevenTotal(f, dist, outsourcePrice){
+    for (var d = 0.1; d <= 40.001; d += 0.1){
+      if (ownTripCost(f, dist, d) < outsourcePrice) return d;
+    }
+    return Infinity;
+  }
+  function fmt(n){ return '¥' + Math.round(n).toLocaleString('zh-CN'); }
+
+  var el = function(id){ return document.getElementById(id); };
+  var dist = 40, nurse = 0, vol = 8, share = 15;
+  var c1, c2;
+
+  function renderLegend(){
+    el('leg1').innerHTML = RATES.map(function(r){
+      return '<span><i style="background:'+r.color+'"></i>'+r.name+'</span>';
+    }).join('');
+    el('leg2').innerHTML =
+      '<span><i style="background:'+FLEET.amb.color+'"></i>救护车自营单趟成本</span>' +
+      '<span><i style="background:'+FLEET.van.color+'"></i>商务车自营单趟成本</span>' +
+      '<span><i style="background:#8CA2AF"></i>外包市场价参考线（虚线）</span>';
+  }
+
+  function renderKpis(){
+    var ambTrips = Math.max(0.01, vol * share / 100);
+    var vanTrips = Math.max(0.01, vol - ambTrips);
+    var ambOut = tripPrice(RATES.filter(function(r){return r.id==='amb_c';})[0], dist, nurse);
+    var vanOut = tripPrice(RATES.filter(function(r){return r.id==='van_gl8';})[0], dist, 0);
+    var ambOwn = ownTripCost(FLEET.amb, dist, ambTrips);
+    var vanOwn = ownTripCost(FLEET.van, dist, vanTrips);
+    var ambBe = breakevenTotal(FLEET.amb, dist, ambOut);
+    var vanBe = breakevenTotal(FLEET.van, dist, vanOut);
+    var ambPick = ambOwn < ambOut, vanPick = vanOwn < vanOut;
+
+    var cards = [
+      {k:'救护车 · 每日趟数',   v: ambTrips.toFixed(1), n:'按 '+vol+' 单/天 × '+share+'%，需 '+fleetSize(ambTrips)+' 辆', c:''},
+      {k:'救护车自营单趟',      v: fmt(ambOwn), n:'外包价 '+fmt(ambOut), c: ambPick?'is-good':'is-bad'},
+      {k:'救护车建议',          v: ambPick?'自营':'外包', n:'需达 '+ambBe.toFixed(1)+' 趟/天才回本', c: ambPick?'is-good':'is-warn'},
+      {k:'商务车 · 每日趟数',   v: vanTrips.toFixed(1), n:'其余可坐可走的旅客，需 '+fleetSize(vanTrips)+' 辆', c:''},
+      {k:'商务车自营单趟',      v: fmt(vanOwn), n:'外包价 '+fmt(vanOut), c: vanPick?'is-good':'is-bad'},
+      {k:'商务车建议',          v: vanPick?'自营':'外包', n:'需达 '+vanBe.toFixed(1)+' 趟/天才回本', c: vanPick?'is-good':'is-warn'}
+    ];
+    el('kpis').innerHTML = cards.map(function(c){
+      return '<div class="kpi '+c.c+'"><div class="k">'+c.k+'</div><div class="v">'+c.v+'</div><div class="n">'+c.n+'</div></div>';
+    }).join('');
+  }
+
+  function renderTable(){
+    var rows = [
+      {f:FLEET.amb, outId:'amb_c',  trips: Math.max(0.01, vol*share/100)},
+      {f:FLEET.van, outId:'van_gl8',trips: Math.max(0.01, vol - vol*share/100)}
+    ];
+    var html = rows.map(function(r){
+      var rate = RATES.filter(function(x){return x.id===r.outId;})[0];
+      var outP = tripPrice(rate, dist, (r.f===FLEET.amb?nurse:0));
+      var fixed = annualFixed(r.f);
+      var varc = r.f.varPerKm * dist + r.f.toll;
+      var be = breakevenTotal(r.f, dist, outP);
+      var ok = ownTripCost(r.f, dist, r.trips) < outP;
+      var crew = r.f.crew.map(function(c){return c.k+' '+fmt(c.v/10000)+'万';}).join(' ＋ ');
+      var cars = fleetSize(r.trips);
+      return '<tr>'+
+        '<td><b>'+r.f.label+'</b><br><span style="font-size:11px;color:var(--text-3)">'+crew+'</span></td>'+
+        '<td class="num">'+fmt(fixed/10000)+' 万/辆<br><span style="font-size:11px;color:var(--text-3)">折旧含在内 · 配 '+cars+' 辆</span></td>'+
+        '<td class="num">'+fmt(varc)+'</td>'+
+        '<td class="num">'+fmt(outP)+'<br><span style="font-size:11px;color:var(--text-3)">'+rate.name+'</span></td>'+
+        '<td class="num">'+be.toFixed(1)+' 趟/天</td>'+
+        '<td><span class="tag '+(ok?'g':'a')+'">'+(ok?'自营更省':'外包更省')+'</span></td>'+
+      '</tr>';
+    }).join('');
+    el('beTable').querySelector('tbody').innerHTML = html;
+  }
+
+  function renderMatrix(){
+    var m = [
+      {t:'A · 可自主行走', sw:'#0F9D58', who:'体检、复查、门诊、医美、辅助生殖、轻症陪诊', pick:'商务车（GL8 / 奥德赛）', share:'约占 55–65%', tag:'g'},
+      {t:'B · 需搀扶 / 轮椅', sw:'#0E7C86', who:'术后恢复期、行动不便、 elderly 旅客，生命体征平稳', pick:'商务车 + 无障碍踏板车，或 C 级转运车', share:'约占 20–30%', tag:'p'},
+      {t:'C · 担架 / 需吸氧', sw:'#E0821B', who:'术后回国、卧床、带引流管、持续吸氧、需心电监护', pick:'救护车 B 级诊疗型，加派护士随车', share:'约占 8–12%', tag:'a'},
+      {t:'D · 危重 / ICU 转院', sw:'#D63B45', who:'需呼吸机、微量泵等生命支持，或跨境重症转院', pick:'救护车 A 级监护型 + 医护团队，须医院对接', share:'约占 2–5%', tag:'r'}
+    ];
+    el('matrix').innerHTML = m.map(function(x){
+      return '<div class="card"><h4><span class="swatch" style="background:'+x.sw+'"></span>'+x.t+'</h4>'+
+        '<div class="who">'+x.who+'</div>'+
+        '<div class="pick">推荐车型：<b>'+x.pick+'</b></div>'+
+        '<div class="share"><span class="tag '+x.tag+'">'+x.share+'</span></div></div>';
+    }).join('');
+  }
+
+  function feeRow(label, val, optional, included, total){
+    var right;
+    if (included) right = '<span class="muted">已含</span>';
+    else if (val === null) right = '<span class="muted">未选</span>';
+    else right = fmt(val);
+    var cls = 'fee-row' + (optional ? ' opt' : '') + (total ? ' total' : '');
+    return '<div class="'+cls+'"><span>'+label+'</span><span class="num">'+right+'</span></div>';
+  }
+
+  function renderFees(){
+    var vRate = RATES.filter(function(r){ return r.id === 'van_gl8'; })[0];
+    var aRate = RATES.filter(function(r){ return r.id === 'amb_c'; })[0];
+    var vExtra = Math.max(0, dist - vRate.incl) * vRate.perKm;
+    var aExtra = Math.max(0, dist - aRate.incl) * aRate.perKm;
+    var vanBase = vRate.base + vExtra + vRate.toll;
+    var ambBase = aRate.base + aExtra + aRate.toll;
+    var add = nurse ? NURSE : 0;
+
+    el('vanRows').innerHTML =
+      feeRow('车辆起步价（含 '+vRate.incl+' 公里）', vRate.base) +
+      feeRow('超程费（'+Math.max(0,dist-vRate.incl)+' 公里 × '+vRate.perKm+' 元）', vExtra) +
+      feeRow('过路费 / 停车', vRate.toll) +
+      (nurse ? feeRow('加派护士（RN 跟车）', NURSE, true) : feeRow('加派护士（可选升级）', null, true)) +
+      feeRow('合计（含税）', vanBase + add, false, false, true);
+    el('vanTotal').textContent = '合计 ' + fmt(vanBase + add);
+
+    el('ambRows').innerHTML =
+      feeRow('出车 / 基础费（含 '+aRate.incl+' 公里）', aRate.base) +
+      feeRow('超程费（'+Math.max(0,dist-aRate.incl)+' 公里 × '+aRate.perKm+' 元）', aExtra) +
+      feeRow('随车照护员（合规 3 人配置）', 0, false, true) +
+      feeRow('基础担架 / 吸氧设备', 0, false, true) +
+      feeRow('过路费', aRate.toll) +
+      (nurse ? feeRow('加派护士（RN 跟车）', NURSE, true) : feeRow('加派护士（可选升级）', null, true)) +
+      feeRow('合计（含税）', ambBase + add, false, false, true);
+    el('ambTotal').textContent = '合计 ' + fmt(ambBase + add);
+  }
+
+  function drawC1(){
+    var data = RATES.map(function(r){ return tripPrice(r, dist, nurse); });
+    var cfg = {
+      type:'bar',
+      data:{labels:RATES.map(function(r){return r.name;}),
+        datasets:[{data:data, backgroundColor:RATES.map(function(r){return r.color;}), borderRadius:4, barPercentage:0.62}]},
+      options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        layout:{padding:{right:64}},
+        plugins:{legend:{display:false}, tooltip:{callbacks:{label:function(c){return fmt(c.raw)+' / 趟';}}}},
+        scales:{
+          x:{beginAtZero:true, title:{display:true,text:'单趟到手价（元）',color:'#57707F',font:{size:12}},
+             grid:{color:'rgba(15,32,41,.06)'}, ticks:{color:'#57707F',font:{size:11}}},
+          y:{grid:{display:false}, ticks:{color:'#0F2029',font:{size:12}, autoSkip:false}}
+        }},
+      plugins:[{id:'tip1', afterDatasetsDraw:function(chart){
+        var ctx=chart.ctx; ctx.save();
+        ctx.font='600 12px -apple-system,BlinkMacSystemFont,sans-serif';
+        ctx.fillStyle='#0F2029'; ctx.textBaseline='middle';
+        chart.getDatasetMeta(0).data.forEach(function(b,i){
+          ctx.fillText(fmt(data[i]), b.x+9, b.y);
+        });
+        ctx.restore();
+      }}]
+    };
+    if (c1) { c1.destroy(); }
+    c1 = new Chart(el('c1'), cfg);
+  }
+
+  function drawC2(){
+    var steps = [], ambOwn = [], vanOwn = [];
+    for (var d = 0.5; d <= 8.001; d += 0.25){
+      steps.push(Math.round(d*10)/10);
+      ambOwn.push(ownTripCost(FLEET.amb, dist, d));
+      vanOwn.push(ownTripCost(FLEET.van, dist, d));
+    }
+    var ambOut = tripPrice(RATES.filter(function(r){return r.id==='amb_c';})[0], dist, nurse);
+    var vanOut = tripPrice(RATES.filter(function(r){return r.id==='van_gl8';})[0], dist, 0);
+    var n = steps.length;
+    var refAmb = new Array(n).fill(ambOut);
+    var refVan = new Array(n).fill(vanOut);
+    var cfg = {
+      type:'line',
+      data:{labels:steps.map(function(s){return s.toFixed(1);}),
+        datasets:[
+          {label:'救护车自营', data:ambOwn, borderColor:FLEET.amb.color, backgroundColor:FLEET.amb.color, borderWidth:2.2, pointRadius:0, tension:.25},
+          {label:'商务车自营', data:vanOwn, borderColor:FLEET.van.color, backgroundColor:FLEET.van.color, borderWidth:2.2, pointRadius:0, tension:.25},
+          {label:'救护车外包价', data:refAmb, borderColor:'#8CA2AF', borderWidth:1.4, borderDash:[5,4], pointRadius:0},
+          {label:'商务车外包价', data:refVan, borderColor:'#C4D2DA', borderWidth:1.4, borderDash:[5,4], pointRadius:0}
+        ]},
+      options:{responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
+        plugins:{legend:{display:false}, tooltip:{callbacks:{
+          title:function(it){ return it[0].label + ' 趟/天'; },
+          label:function(c){ return c.dataset.label + '：' + fmt(c.parsed.y); }}}},
+        scales:{
+          x:{title:{display:true,text:'该类车型每日总趟数（平台口径）',color:'#57707F',font:{size:12}},
+             grid:{display:false}, ticks:{color:'#57707F',font:{size:11}, maxTicksLimit:9}},
+          y:{beginAtZero:true, title:{display:true,text:'自营单趟成本（元）',color:'#57707F',font:{size:12}},
+             grid:{color:'rgba(15,32,41,.06)'}, ticks:{color:'#57707F',font:{size:11}}}
+        }},
+      plugins:[{id:'mark2', afterDatasetsDraw:function(chart){
+        var ctx=chart.ctx, xs=chart.scales.x, ys=chart.scales.y;
+        var ambTrips = Math.max(0.5, vol*share/100), vanTrips = Math.max(0.5, vol - vol*share/100);
+        ctx.save();
+        [[ambTrips,FLEET.amb.color],[vanTrips,FLEET.van.color]].forEach(function(p){
+          var t = Math.min(8, Math.max(0.5, p[0]));
+          var x = xs.left + (t-0.5)/(8-0.5) * (xs.right - xs.left);
+          ctx.strokeStyle = p[1]; ctx.lineWidth = 1.2; ctx.setLineDash([3,3]);
+          ctx.beginPath(); ctx.moveTo(x, ys.top); ctx.lineTo(x, ys.bottom); ctx.stroke();
+        });
+        ctx.setLineDash([]);
+        ctx.restore();
+      }}]
+    };
+    if (c2) { c2.destroy(); }
+    c2 = new Chart(el('c2'), cfg);
+  }
+
+  function renderAll(){
+    el('distV').textContent = dist;
+    el('nurseV').textContent = nurse ? '加派（+400 元）' : '不加';
+    el('volV').textContent = vol;
+    el('shareV').textContent = share;
+    renderKpis(); renderTable(); renderFees(); drawC1(); drawC2();
+  }
+
+  el('dist').addEventListener('input', function(e){ dist = +e.target.value; renderAll(); });
+  el('nurse').addEventListener('input', function(e){ nurse = +e.target.value; renderAll(); });
+  el('vol').addEventListener('input', function(e){ vol = +e.target.value; renderAll(); });
+  el('share').addEventListener('input', function(e){ share = +e.target.value; renderAll(); });
+
+  renderLegend(); renderMatrix(); renderAll();
+})();
+</script>
+</body>
+</html>
